@@ -1,0 +1,18 @@
+<div class="relative w-full h-3 flex items-center justify-center">
+  <p
+    *ngIf="progress"
+    class="text-white text-sm z-10"
+    [ngStyle]="{
+      color: progress > 0.5 ? 'white' : '#6d28d9'
+    }"
+  >
+    {{ templateProgress }}
+  </p>
+  <div
+    class="rounded-full absolute top-0 left-0 h-3"
+    [ngStyle]="{
+      width: templateProgress,
+      backgroundColor: color || '#6d28d9'
+    }"
+  ></div>
+</div>
