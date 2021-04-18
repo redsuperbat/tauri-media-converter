@@ -1,10 +1,13 @@
 import {
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  Renderer2,
+  ViewChild,
 } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -21,7 +24,23 @@ export class DropdownComponent<T> implements OnInit, OnDestroy {
   public onDropdownItemClick$ = new Subject<T>();
   public selectedDropdownItemName$: Observable<string>;
 
+  @ViewChild('dropdownItems')
+  private dropdownItems: ElementRef;
+  @ViewChild('dropdownButton')
+  private dropdownButton: ElementRef;
+
+  constructor(private renderer: Renderer2) {}
+
   ngOnInit(): void {
+    this.renderer.listen('window', 'click', (e: Event) => {
+      if (
+        e.target !== this.dropdownItems?.nativeElement &&
+        e.target !== this.dropdownButton?.nativeElement
+      ) {
+        this.isVisible$.next(false);
+      }
+    });
+
     this.subs.push(
       this.onDropdownClick$.subscribe(() => {
         this.isVisible$.next(!this.isVisible$.value);

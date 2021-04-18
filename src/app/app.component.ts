@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { fetchFile } from '@ffmpeg/ffmpeg';
-import { combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { combineLatest, Observable, Subject } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { ConversionType, conversionTypes } from 'src/assets/constants';
 import filterNil from './operators/filter-nil';
 import { FfmpegService } from './services/ffmpeg.service';
-import { download } from './utils';
+import { download, serialUnsubscriber, SubscriptionCollection } from './utils';
 
 @Component({
   selector: 'app-root',
@@ -13,15 +13,15 @@ import { download } from './utils';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  private subs: Subscription[] = [];
+  constructor(private ffmpegService: FfmpegService) {}
+
+  private subs: SubscriptionCollection = {};
   public onConversionTypeSelect$ = new Subject<ConversionType>();
   public onFileSelect$ = new Subject<File | null | undefined>();
   public onConvertBtnClick$ = new Subject<void>();
   public conversionProgress$ = new Subject<number>();
   public fileName$: Observable<string>;
   public items: ConversionType[];
-
-  constructor(private ffmpegService: FfmpegService) {}
 
   ngOnInit() {
     this.items = conversionTypes;
@@ -30,15 +30,13 @@ export class AppComponent implements OnInit, OnDestroy {
       map((f) => f.name),
       startWith('Choose file')
     );
-    this.subs.push(
-      combineLatest([
-        this.onConversionTypeSelect$,
-        this.onFileSelect$.pipe(filterNil()),
-        this.onConvertBtnClick$,
-      ]).subscribe(([{ key: convertTo }, file]) => {
-        this.handleFileConversion(convertTo, file);
-      })
-    );
+    this.subs.fileConversion = combineLatest([
+      this.onConversionTypeSelect$,
+      this.onFileSelect$.pipe(filterNil()),
+      this.onConvertBtnClick$,
+    ]).subscribe(([{ key: convertTo }, file]) => {
+      this.handleFileConversion(convertTo, file);
+    });
   }
 
   private async handleFileConversion(convertTo: string, file: File) {
@@ -67,6 +65,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subs.forEach((s) => s.unsubscribe());
+    serialUnsubscriber(this.subs);
   }
 }
