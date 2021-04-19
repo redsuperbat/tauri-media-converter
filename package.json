@@ -7,7 +7,8 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "tauri": "tauri"
   },
   "private": true,
   "dependencies": {
@@ -19,8 +20,11 @@
     "@angular/platform-browser": "~11.2.10",
     "@angular/platform-browser-dynamic": "~11.2.10",
     "@angular/router": "~11.2.10",
+    "@angular/service-worker": "~11.2.10",
     "@ffmpeg/core": "^0.8.5",
     "@ffmpeg/ffmpeg": "^0.9.7",
+    "@tauri-apps/api": "^1.0.0-beta-rc.1",
+    "@tauri-apps/cli": "^1.0.0-beta-rc.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.3"

@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { serialUnsubscriber, SubscriptionCollection } from 'src/app/utils';
 
 @Component({
   selector: 'app-dropdown',
@@ -18,7 +19,9 @@ import { map, startWith } from 'rxjs/operators';
   styleUrls: ['./dropdown.component.scss'],
 })
 export class DropdownComponent<T> implements OnInit, OnDestroy {
-  private subs: Subscription[] = [];
+  private subs: SubscriptionCollection = {};
+
+  public onCloseClick$ = new Subject<void>();
   public onDropdownClick$ = new Subject<MouseEvent>();
   public isVisible$ = new BehaviorSubject(false);
   public onDropdownItemClick$ = new Subject<T>();
@@ -41,26 +44,31 @@ export class DropdownComponent<T> implements OnInit, OnDestroy {
       }
     });
 
-    this.subs.push(
-      this.onDropdownClick$.subscribe(() => {
-        this.isVisible$.next(!this.isVisible$.value);
-      }),
-      this.onDropdownItemClick$.subscribe((item: T) => {
+    this.subs.dropdownClick = this.onDropdownClick$.subscribe(() => {
+      this.isVisible$.next(!this.isVisible$.value);
+    });
+    this.subs.dropdownItemClick = this.onDropdownItemClick$.subscribe(
+      (item: T) => {
         this.isVisible$.next(false);
-        this.onSelect?.emit(item);
-      })
+        this.onSelect.emit(item);
+      }
     );
+    this.subs.closeClick = this.onCloseClick$.subscribe(() =>
+      this.onDropdownItemClick$.next(undefined)
+    );
+
     this.selectedDropdownItemName$ = this.onDropdownItemClick$.pipe(
       map((item) => {
+        if (item === null || item === undefined) return this.initalText;
         if (this.labelField) return String(item[this.labelField]);
-        return this.initalText;
+        return String(item);
       }),
       startWith(this.initalText)
     );
   }
 
   ngOnDestroy(): void {
-    this.subs.forEach((s) => s.unsubscribe());
+    serialUnsubscriber(this.subs);
   }
   @Input()
   public items: T[];
