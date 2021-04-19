@@ -1,7 +1,7 @@
 {
   "name": "tauri-media-converter",
   "short_name": "tauri-media-converter",
-  "theme_color": "#1976d2",
+  "theme_color": "#6d28d9",
   "background_color": "#fafafa",
   "display": "standalone",
   "scope": "./",

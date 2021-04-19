@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { fetchFile } from '@ffmpeg/ffmpeg';
-import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
-import { map, startWith, switchMap } from 'rxjs/operators';
+import { combineLatest, Observable, Subject } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import { ConversionType, conversionTypes } from 'src/assets/constants';
 import filterNil from './operators/filter-nil';
 import { FfmpegService } from './services/ffmpeg.service';
