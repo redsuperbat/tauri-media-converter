@@ -9,7 +9,7 @@ import {
   Renderer2,
   ViewChild,
 } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { serialUnsubscriber, SubscriptionCollection } from 'src/app/utils';
 
@@ -21,9 +21,9 @@ import { serialUnsubscriber, SubscriptionCollection } from 'src/app/utils';
 export class DropdownComponent<T> implements OnInit, OnDestroy {
   private subs: SubscriptionCollection = {};
 
+  public isVisible = false;
   public onCloseClick$ = new Subject<void>();
   public onDropdownClick$ = new Subject<MouseEvent>();
-  public isVisible$ = new BehaviorSubject(false);
   public onDropdownItemClick$ = new Subject<T>();
   public selectedDropdownItemName$: Observable<string>;
 
@@ -37,19 +37,19 @@ export class DropdownComponent<T> implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.renderer.listen('window', 'click', (e: Event) => {
       if (
-        e.target !== this.dropdownItems?.nativeElement &&
-        e.target !== this.dropdownButton?.nativeElement
+        !this.dropdownButton?.nativeElement.contains(e.target) &&
+        !this.dropdownItems?.nativeElement.contains(e.target)
       ) {
-        this.isVisible$.next(false);
+        this.isVisible = false;
       }
     });
 
-    this.subs.dropdownClick = this.onDropdownClick$.subscribe(() => {
-      this.isVisible$.next(!this.isVisible$.value);
-    });
+    this.subs.dropdownClick = this.onDropdownClick$.subscribe(
+      () => (this.isVisible = !this.isVisible)
+    );
     this.subs.dropdownItemClick = this.onDropdownItemClick$.subscribe(
       (item: T) => {
-        this.isVisible$.next(false);
+        this.isVisible = false;
         this.onSelect.emit(item);
       }
     );

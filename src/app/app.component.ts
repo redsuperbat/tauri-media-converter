@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { fetchFile } from '@ffmpeg/ffmpeg';
-import { combineLatest, Observable, Subject } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { map, startWith, withLatestFrom } from 'rxjs/operators';
 import { ConversionType, conversionTypes } from 'src/assets/constants';
 import filterNil from './operators/filter-nil';
 import { FfmpegService } from './services/ffmpeg.service';
+import { MessageService } from './services/message.service';
 import { download, serialUnsubscriber, SubscriptionCollection } from './utils';
 
 @Component({
@@ -13,7 +14,10 @@ import { download, serialUnsubscriber, SubscriptionCollection } from './utils';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  constructor(private ffmpegService: FfmpegService) {}
+  constructor(
+    private ffmpegService: FfmpegService,
+    private messageService: MessageService
+  ) {}
 
   private subs: SubscriptionCollection = {};
   public onConversionTypeSelect$ = new Subject<ConversionType>();
@@ -30,18 +34,20 @@ export class AppComponent implements OnInit, OnDestroy {
       map((f) => f.name),
       startWith('Choose file')
     );
-    this.subs.fileConversion = combineLatest([
-      this.onConversionTypeSelect$,
-      this.onFileSelect$.pipe(filterNil()),
-      this.onConvertBtnClick$,
-    ]).subscribe(([{ key: convertTo }, file]) => {
-      this.handleFileConversion(convertTo, file);
-    });
+    this.subs.fileConversion = this.onConvertBtnClick$
+      .pipe(withLatestFrom(this.onFileSelect$, this.onConversionTypeSelect$))
+      .subscribe(([, file, { key: convertTo }]) => {
+        if (!file || !convertTo) {
+          return this.messageService.messages.next({
+            title: 'Error',
+            body: 'Insufficient information provided',
+          });
+        }
+        this.handleFileConversion(convertTo, file);
+      });
   }
 
   private async handleFileConversion(convertTo: string, file: File) {
-    if (!convertTo) return;
-    if (!file) return;
     if (this.ffmpegService.instance.isLoaded()) {
       const convertedName = file.name.split('.')[0] + '.' + convertTo;
 

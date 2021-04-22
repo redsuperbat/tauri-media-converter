@@ -11,29 +11,29 @@
       <p>
         {{ selectedDropdownItemName$ | async }}
       </p>
-      <svg
-        class="w-5 h-5"
-        viewBox="0 0 24 24"
-        *ngIf="
-          (selectedDropdownItemName$ | async) !== initalText;
-          else chevronDown
-        "
-        (click)="onCloseClick$.next()"
-      >
-        <path
-          fill="currentColor"
-          d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-        />
-      </svg>
-      <ng-template #chevronDown>
-        <svg class="h-5 w-5" viewBox="0 0 20 20" aria-hidden="true">
+
+      <div [hidden]="(selectedDropdownItemName$ | async) === initalText">
+        <svg
+          class="w-5 h-5"
+          viewBox="0 0 24 24"
+          role="button"
+          (click)="onCloseClick$.next()"
+        >
+          <path
+            fill="currentColor"
+            d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+          />
+        </svg>
+      </div>
+      <div [hidden]="(selectedDropdownItemName$ | async) !== initalText">
+        <svg class="h-5 w-5" viewBox="0 0 20 20" role="button">
           <path
             fillRule="evenodd"
             d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
             clipRule="evenodd"
           />
         </svg>
-      </ng-template>
+      </div>
     </button>
   </div>
   <div
@@ -42,7 +42,7 @@
     aria-orientation="vertical"
     aria-labelledby="menu-button"
     #dropdownItems
-    *ngIf="isVisible$ | async"
+    *ngIf="isVisible"
   >
     <div
       *ngFor="let item of items"
